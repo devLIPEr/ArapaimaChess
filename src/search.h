@@ -54,7 +54,7 @@ class Search{
         bool is_insufficient_material(Bitboard board[]);
         bool is_terminal(Bitboard board[], Color opp, CastlingRights cr, u8 ep);
 
-        int AlphaBeta(unsigned int rule50, atomic<bool> *stop, PVLine *pv, u64 &nodes, int max_depth, int depth, int alpha, int beta, Bitboard board[], Color player, CastlingRights cr, u8 en_passant, TT &tt, vector<Move> search_moves, bool search_order);
+        int AlphaBeta(unsigned int rule50, atomic<bool> *stop, PVLine *pv, u64 &nodes, int max_depth, int depth, int alpha, int beta, Bitboard board[], Color player, CastlingRights cr, u8 en_passant, TT &tt, vector<Move> search_moves, bool search_order, bool book_hint);
         
         int Quiesce(unsigned int rule50, atomic<bool> *stop, u64 &nodes, int alpha, int beta, Bitboard board[], Color player, CastlingRights cr, u8 en_passant, TT &tt);
 };

@@ -8,6 +8,8 @@
 
 #define MAX_HISTORY (1 << 24)
 
+#define SYZYGY_PIECES 5
+
 /// Use only one of the MAGIC's define instruction
 
 /// @brief --- Use intel's pext instruction

@@ -149,7 +149,7 @@ void Engine::go_search(int depth, vector<string> moves, bool hint){
         if(!syzygy || syzygy_fail || board->count_pieces() > TB_LARGEST){
             for(int it_depth = 1; !stop_search.load(memory_order_relaxed) && it_depth <= depth && abs(eval) != 2147400000; it_depth++){
                 u64 nodescount = 0;
-                eval.store(search->AlphaBeta(board->rule50, &stop_search, &pv, nodescount, it_depth, it_depth, -2147400001, 2147400001, board->board, board->curr_player, board->castling_rights, board->en_passant, *tt, search_moves, !fixed_search) * (board->curr_player == BLACK ? -1 : 1), memory_order_relaxed);
+                eval.store(search->AlphaBeta(board->rule50, &stop_search, &pv, nodescount, it_depth, it_depth, -2147400001, 2147400001, board->board, board->curr_player, board->castling_rights, board->en_passant, *tt, search_moves, !fixed_search, hint) * (board->curr_player == BLACK ? -1 : 1), memory_order_relaxed);
                 nodes_count.store(nodescount, memory_order_relaxed);
                 fixed_search = false;
                 

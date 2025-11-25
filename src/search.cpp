@@ -196,13 +196,14 @@ bool Search::is_terminal(Bitboard board[], Color player, CastlingRights cr, u8 e
 /// @param tt reference to transposition table object
 /// @param search_moves moves to search in the first depth or moves to search at each depth
 /// @param search_order toggle between moves to search in the first depth and moves to search at each depth
+/// @param book_move force to search only the book move
 /// @return evaluation of the current position
-int Search::AlphaBeta(unsigned int rule50, atomic<bool> *stop, PVLine *pv, u64 &nodes, int max_depth, int depth, int alpha, int beta, Bitboard board[], Color player, CastlingRights cr, u8 en_passant, TT &tt, vector<Move> search_moves, bool search_order){
+int Search::AlphaBeta(unsigned int rule50, atomic<bool> *stop, PVLine *pv, u64 &nodes, int max_depth, int depth, int alpha, int beta, Bitboard board[], Color player, CastlingRights cr, u8 en_passant, TT &tt, vector<Move> search_moves, bool search_order, bool book_move){
     PVLine line;
     bool can_prune = max_depth != depth;
     nodes++;
 
-    if(cr == NO_CASTLING && Board<MAGIC>::count_pieces(board) <= TB_LARGEST){
+    if(TB_LARGEST == SYZYGY_PIECES && cr == NO_CASTLING && Board<MAGIC>::count_pieces(board) <= TB_LARGEST){
         Bitboard white_pieces = 0;
         Bitboard black_pieces = 0;
         for(int i = 0; i < 6; i++){
@@ -292,7 +293,7 @@ int Search::AlphaBeta(unsigned int rule50, atomic<bool> *stop, PVLine *pv, u64 &
         if(!this->move_gen->in_check(board_copy, empty_pieces, player)){
             PVLine null_line;
             null_move = false;
-            int score = -AlphaBeta(rule50, stop, &null_line, nodes, max_depth, depth-1-reduction, -beta, -(beta-1), board_copy, Color(player^1), cr_copy, ep, tt, vector<Move>(), false);
+            int score = -AlphaBeta(rule50, stop, &null_line, nodes, max_depth, depth-1-reduction, -beta, -(beta-1), board_copy, Color(player^1), cr_copy, ep, tt, vector<Move>(), false, false);
             null_move = true;
             if(score >= beta){
                 return beta;
@@ -337,7 +338,9 @@ int Search::AlphaBeta(unsigned int rule50, atomic<bool> *stop, PVLine *pv, u64 &
         }
     }
     if(search_moves.size() > 0){
-        if(search_order){
+        if(book_move){
+            moves.push_back(search_moves[0]);
+        }else if(search_order){
             Move pv_move = create_move(255, 255, 255, 255, 255, 255, 255);
             if(max_depth-depth >= 0 && (size_t)(max_depth-depth) < search_moves.size()){
                 pv_move = search_moves[max_depth-depth];
@@ -388,7 +391,7 @@ int Search::AlphaBeta(unsigned int rule50, atomic<bool> *stop, PVLine *pv, u64 &
             reduction = (reduction > MAX_LATE_REDUCTION) ? MAX_LATE_REDUCTION : reduction;
         }
         i++;
-        int score = -AlphaBeta(rule50, stop, &line, nodes, max_depth, depth-1-reduction, -beta, -alpha, board_copy, Color(player^1), cr_copy, ep, tt, (first_move) ? search_moves : vector<Move>(), first_move);
+        int score = -AlphaBeta(rule50, stop, &line, nodes, max_depth, depth-1-reduction, -beta, -alpha, board_copy, Color(player^1), cr_copy, ep, tt, (first_move) ? search_moves : vector<Move>(), first_move, false);
         first_move = false;
         
         if(score >= beta){
